@@ -51,7 +51,21 @@
     name: node_exporter
     state: "{{ node_exporter_state }}"
     enabled: "{{ node_exporter_enabled }}"
+    
+- name: Centos Allow all access to tcp port 9100
+  when: ansible_os_family == "CentOS Linux" #Red Hat
+  ansible.posix.firewalld:
+    port: 9100/tcp
+    permanent: yes
+    state: enabled
 
+- name: Allow all access to tcp port 9100
+  when: ansible_os_family == "Ubuntu" #Debian
+  community.general.ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+    
 - name: Verify node_exporter is responding to requests.
   uri:
     url: "http://{% if node_exporter_host !='' %}{{ node_exporter_host }}{% else %}localhost{% endif %}:{{ node_exporter_port }}/"
